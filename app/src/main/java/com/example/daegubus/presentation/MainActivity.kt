@@ -50,17 +50,11 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.search)
-
-//        search
-        val search_bar = findViewById<EditText>(R.id.search_input)
-        var search_button: Button = findViewById<Button>(R.id.search_button)
-        var result_view = findViewById<LinearLayout>(R.id.resultView)
-
         this.init()
     }
 
     fun init() {
+        setContentView(R.layout.search)
         val search_bar = findViewById<EditText>(R.id.search_input)
         var search_button: Button = findViewById<Button>(R.id.search_button)
         search_bar.setHint("Search")
