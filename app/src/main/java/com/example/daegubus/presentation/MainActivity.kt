@@ -9,9 +9,8 @@ package com.example.daegubus.presentation
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.LinearLayout
-import android.widget.ListView
-import android.widget.ScrollView
 import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.background
@@ -25,65 +24,154 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.recyclerview.widget.RecyclerView
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Text
 import com.example.daegubus.R
 import com.example.daegubus.presentation.theme.DaeguBusTheme
-import org.w3c.dom.Text
-import com.example.daegubus.presentation.DataApiService
 import com.example.daegubus.presentation.models.StationInfo
 import com.example.daegubus.presentation.models.BusInfo
+import org.json.JSONArray
+import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.io.FileWriter
+import java.io.PrintWriter
+import com.google.gson.Gson
 
 class MainActivity : ComponentActivity() {
+//    즐겨찾기 정보 json 파일
+    var jsonString = assets.open("data.json").reader().readText()
+    var jsonArray = JSONArray(jsonString)
+
+
     val retrofit =Retrofit.Builder()
         .baseUrl("https://port-0-bus-station-7xwyjq992lliyexgag.sel4.cloudtype.app/")
         .addConverterFactory(GsonConverterFactory.create())
         .build()
     val dataApiService = retrofit.create(DataApiService:: class.java)
     var stid:String = "000000"
+    var myStation = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        this.init()
+        this.createSearchView()
     }
 
-    fun init() {
+    fun createSearchView() {
         setContentView(R.layout.search)
+        this.updateMyStations()
         val search_bar = findViewById<EditText>(R.id.search_input)
-        var search_button: Button = findViewById<Button>(R.id.search_button)
+        val search_button: Button = findViewById<Button>(R.id.search_button)
         search_bar.setHint("Search")
         search_button.setOnClickListener {
             this.onSeachButtonClick()
         }
     }
+    fun updateMyStations(){
+        val my_stations_view = findViewById<LinearLayout>(R.id.my_stations_layout)
+        var my_result :List<StationInfo> = List(jsonArray.length(), { i -> StationInfo("0","0","0")})
+        for (index in 0 until jsonArray.length()){
+            val jsonObject = jsonArray.getJSONObject(index)
 
-    fun onStaionViewClick(bsNm: String, bsId: String) {
+            my_result[index].bsId = jsonObject.getString("bsId")
+            my_result[index].bsNm = jsonObject.getString("bsNm")
+            my_result[index].routeList = jsonObject.getString("routeList")
+        }
+        addStation(my_result, my_stations_view)
+    }
+
+    fun checkMyStation(bsId : String){
+        for (index in 0 until jsonArray.length()){
+            if (jsonArray.getJSONObject(index).getString("bsId") == bsId) {
+                myStation = true
+                return
+            }
+        }
+        myStation = false
+    }
+    fun addMyStation(bsId : String, bsNm : String, routeList : String){
+
+        val jsonObj = JSONObject()
+        jsonObj.put("bsId", bsId)
+        jsonObj.put("bsNm", bsNm)
+        jsonObj.put("routeList", routeList)
+
+        jsonArray.put(jsonObj)
+        this.updateMyStationJson(jsonArray)
+    }
+
+    fun updateMyStationJson(array : JSONArray){
+        val path = "/src/assets/data.json"
+        PrintWriter(FileWriter(path)).use {
+            val gson = Gson()
+            val jsonString = gson.toJson(array)
+            it.write(jsonString)
+        }
+        jsonString = assets.open("data.json").reader().readText()
+        jsonArray = JSONArray(jsonString)
+    }
+    fun onMyStationClick(bsId : String, bsNm : String, routeList : String){
+
+        if (this.myStation){
+            val newJsonArray = JSONArray()
+            for (index in 0 until jsonArray.length()){
+                if (jsonArray.getJSONObject(index).getString("bsId") != bsId){
+                    newJsonArray.put(jsonArray.getJSONObject(index))
+
+                }
+            }
+            this.updateMyStationJson(newJsonArray)
+            this.myStation = false
+        }
+        else{
+            this.addMyStation(bsId, bsNm, routeList)
+            this.myStation = true
+        }
+    }
+
+    fun fill_star(starButton: ImageButton){
+        if (this.myStation){
+//            별 노란색으로 채우기
+            starButton.setImageResource(R.drawable.star_fill)
+        }else{
+//            별 색 지우기
+            starButton.setImageResource(R.drawable.star_blank)
+        }
+    }
+
+    fun onStaionViewClick(bsNm: String, bsId: String, routeList : String) {
         stid = bsId
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.station_info)
 
-//            bus info
+//        bus info
         val station_text = findViewById<TextView>(R.id.station_text)
         val back_button = findViewById<Button>(R.id.back)
         val updateButton = findViewById<Button>(R.id.updateButton)
+        val starButton = findViewById<ImageButton>(R.id.starButton)
+
+        this.checkMyStation(bsId)
+        this.fill_star(starButton)
+        starButton.setOnClickListener{
+            this.onMyStationClick(bsId, bsNm, routeList)
+        }
+
+
 
         updateButton.setOnClickListener {
             this.updateBusInfo()
         }
         back_button.setOnClickListener {
-            this.init()
+            this.createSearchView()
         }
         station_text.text = bsNm
         this.updateBusInfo()
     }
 
     fun addBus(result: List<BusInfo>) {
-        var busResultView = findViewById<LinearLayout>(R.id.busResultView)
+        val busResultView = findViewById<LinearLayout>(R.id.busResultView)
         busResultView.removeAllViews()
         for (bus in result) {
             val ll = LinearLayout(this)
@@ -113,15 +201,11 @@ class MainActivity : ComponentActivity() {
             ) {
                 if (response.isSuccessful) {
                     // 정상적으로 통신이 성공된 경우
-                    var result: List<BusInfo>? = response.body()
+                    val result: List<BusInfo>? = response.body()
                     if (result != null) {
                         addBus(result)
                     }
-                    if (result != null) {
 
-                    }
-
-//                        test_view.text =  "성공"
                 } else {
                     // 통신이 실패한 경우(응답코드 3xx, 4xx 등)
                 }
@@ -133,9 +217,8 @@ class MainActivity : ComponentActivity() {
         })
     }
 
-    fun addStation(result: List<StationInfo>) {
-        var result_view = findViewById<LinearLayout>(R.id.resultView)
-        result_view.removeAllViews()
+    fun addStation(result: List<StationInfo>, target : LinearLayout) {
+        target.removeAllViews()
         for (station in result) {
             val station_view = TextView(this)
             station_view.text = station.bsNm
@@ -143,9 +226,9 @@ class MainActivity : ComponentActivity() {
             station.bsId
 
             station_view.setOnClickListener {
-                this.onStaionViewClick(station.bsNm, station.bsId)
+                this.onStaionViewClick(station.bsNm, station.bsId, station.routeList)
             }
-            result_view.addView(station_view)
+            target.addView(station_view)
         }
 
     }
@@ -153,14 +236,15 @@ class MainActivity : ComponentActivity() {
     fun onSeachButtonClick(){
         val search_bar = findViewById<EditText>(R.id.search_input)
         val searchText : String = search_bar.text.toString()
+        val result_view = findViewById<LinearLayout>(R.id.resultView)
         dataApiService.getStaionInfo(searchText)?.enqueue( object  : Callback<List<StationInfo>>{
             override fun onResponse(call: Call<List<StationInfo>>, response: Response<List<StationInfo>>) {
                 if(response.isSuccessful){
                     // 정상적으로 통신이 성공된 경우
-                    var result: List<StationInfo>? = response.body()
+                    val result: List<StationInfo>? = response.body()
 
                     if (result != null) {
-                        addStation(result)
+                        addStation(result, result_view)
                     }
 //                        test_view.text =  "성공"
                 }else{

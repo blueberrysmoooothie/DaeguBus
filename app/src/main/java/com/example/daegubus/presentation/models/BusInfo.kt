@@ -11,9 +11,9 @@ data class StationInfo(
 //    "routeList":"719, \ub3d9\uad6c2, \ub3d9\uad6c8, \ud314\uacf51",
 //    "style":"bs",
 //    "wincId":"20649
-    @SerializedName("bsId") val bsId: String,
-    @SerializedName("bsNm") val bsNm: String,
-    @SerializedName("routeList") val routeList: String,
+    @SerializedName("bsId") var bsId: String,
+    @SerializedName("bsNm") var bsNm: String,
+    @SerializedName("routeList") var routeList: String,
     )
 data class BusInfo(
 
