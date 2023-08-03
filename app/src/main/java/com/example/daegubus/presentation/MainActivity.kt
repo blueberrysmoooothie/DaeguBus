@@ -6,6 +6,9 @@
 
 package com.example.daegubus.presentation
 
+import android.annotation.SuppressLint
+import android.content.Context
+import android.content.res.Resources
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
@@ -40,11 +43,20 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.io.FileWriter
 import java.io.PrintWriter
 import com.google.gson.Gson
+import com.google.gson.JsonParser
+import org.json.JSONException
+import java.io.BufferedReader
+import java.io.File
+import java.io.FileReader
+import java.nio.charset.Charset
 
 class MainActivity : ComponentActivity() {
 //    즐겨찾기 정보 json 파일
-    var jsonString = assets.open("data.json").reader().readText()
-    var jsonArray = JSONArray(jsonString)
+//    val jsonString = assets.open("data.json").reader().readText()
+//    var jsonArray = JSONArray(jsonString)
+
+    var myObj : JSONObject = JSONObject()
+    var jsonArray : JSONArray = JSONArray()
 
 
     val retrofit =Retrofit.Builder()
@@ -55,19 +67,43 @@ class MainActivity : ComponentActivity() {
     var stid:String = "000000"
     var myStation = false
 
+    fun writeJson(test_view:TextView){
+        val path = "data.json"
+        val test_station = StationInfo("test","test","test")
+
+        PrintWriter(FileWriter(path)).use {
+            val gson = Gson()
+            val jsonString = gson.toJson(test_station)
+            it.write(jsonString)
+            test_view.text = jsonString
+        }
+
+    }
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        myObj.put("bsId", "7011012300")
+        myObj.put("bsNm", "강산아파트건너")
+        myObj.put("routeList", "")
+
+        jsonArray.put(myObj)
+
         this.createSearchView()
     }
 
     fun createSearchView() {
         setContentView(R.layout.search)
+//        val test_view = findViewById<TextView>(R.id.station_info1)
+//        test_view.text = jsonString.toString()
+//        this.writeJson(test_view)
         this.updateMyStations()
         val search_bar = findViewById<EditText>(R.id.search_input)
         val search_button: Button = findViewById<Button>(R.id.search_button)
         search_bar.setHint("Search")
         search_button.setOnClickListener {
-            this.onSeachButtonClick()
+            this.onSearchButtonClick()
         }
     }
     fun updateMyStations(){
@@ -82,7 +118,7 @@ class MainActivity : ComponentActivity() {
         }
         addStation(my_result, my_stations_view)
     }
-
+//
     fun checkMyStation(bsId : String){
         for (index in 0 until jsonArray.length()){
             if (jsonArray.getJSONObject(index).getString("bsId") == bsId) {
@@ -100,18 +136,24 @@ class MainActivity : ComponentActivity() {
         jsonObj.put("routeList", routeList)
 
         jsonArray.put(jsonObj)
-        this.updateMyStationJson(jsonArray)
     }
-
+//
     fun updateMyStationJson(array : JSONArray){
-        val path = "/src/assets/data.json"
-        PrintWriter(FileWriter(path)).use {
-            val gson = Gson()
-            val jsonString = gson.toJson(array)
-            it.write(jsonString)
+//        val path = "/src/assets/data.json"
+//        PrintWriter(FileWriter(path)).use {
+//            val gson = Gson()
+//            val jsonString = gson.toJson(array)
+//            it.write(jsonString)
+//        }
+//        jsonString = assets.open("data.json").reader().readText()
+//        jsonArray = JSONArray(jsonString)
+
+        for (index in 0 until jsonArray.length()){
+            jsonArray.remove(0)
         }
-        jsonString = assets.open("data.json").reader().readText()
-        jsonArray = JSONArray(jsonString)
+        for (index in 0 until array.length()){
+            jsonArray.put(array[index])
+        }
     }
     fun onMyStationClick(bsId : String, bsNm : String, routeList : String){
 
@@ -142,7 +184,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    fun onStaionViewClick(bsNm: String, bsId: String, routeList : String) {
+    fun onStaionViewClick(bsId: String, bsNm: String, routeList : String) {
         stid = bsId
         setContentView(R.layout.station_info)
 
@@ -156,9 +198,8 @@ class MainActivity : ComponentActivity() {
         this.fill_star(starButton)
         starButton.setOnClickListener{
             this.onMyStationClick(bsId, bsNm, routeList)
+            this.onStaionViewClick(bsId, bsNm, routeList)
         }
-
-
 
         updateButton.setOnClickListener {
             this.updateBusInfo()
@@ -226,14 +267,14 @@ class MainActivity : ComponentActivity() {
             station.bsId
 
             station_view.setOnClickListener {
-                this.onStaionViewClick(station.bsNm, station.bsId, station.routeList)
+                this.onStaionViewClick( station.bsId, station.bsNm, station.routeList)
             }
             target.addView(station_view)
         }
 
     }
 
-    fun onSeachButtonClick(){
+    fun onSearchButtonClick(){
         val search_bar = findViewById<EditText>(R.id.search_input)
         val searchText : String = search_bar.text.toString()
         val result_view = findViewById<LinearLayout>(R.id.resultView)
@@ -295,5 +336,7 @@ fun Greeting(greetingName: String) {
 @Preview(device = Devices.WEAR_OS_SMALL_ROUND, showSystemUi = true)
 @Composable
 fun DefaultPreview() {
-//    WearApp("Preview Android")
+    WearApp("Preview Android")
+    val jsonString = ComponentActivity().assets.open("data.json").reader().readText()
+//    val jsonArray = JSONTokener(jsonString).nextValue() as JSONArray
 }

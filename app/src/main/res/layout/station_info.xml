@@ -37,9 +37,9 @@
 
                     <TextView
                         android:id="@+id/station_text"
-                        android:layout_width="match_parent"
+                        android:layout_width="109dp"
                         android:layout_height="match_parent"
-                        android:layout_weight="8"
+                        android:layout_weight="7"
                         android:text="test"
                         android:textAlignment="center"
                         android:textSize="16sp" />
@@ -47,9 +47,9 @@
                     <ImageButton
                         android:id="@+id/starButton"
                         android:layout_width="32dp"
-                        android:layout_height="24dp"
-                        android:layout_weight="2"
-                        android:src="@android:drawable/btn_star_big_off" />
+                        android:layout_height="32dp"
+                        android:layout_weight="1"
+                        android:src="@android:drawable/star_off" />
                 </LinearLayout>
 
                 <View
