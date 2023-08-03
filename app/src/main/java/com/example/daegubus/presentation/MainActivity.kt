@@ -52,7 +52,7 @@ import java.nio.charset.Charset
 
 class MainActivity : ComponentActivity() {
 //    즐겨찾기 정보 json 파일
-//    val jsonString = assets.open("data.json").reader().readText()
+    var jsonString = ""
 //    var jsonArray = JSONArray(jsonString)
 
     var myObj : JSONObject = JSONObject()
@@ -67,17 +67,11 @@ class MainActivity : ComponentActivity() {
     var stid:String = "000000"
     var myStation = false
 
-    fun writeJson(test_view:TextView){
-        val path = "data.json"
-        val test_station = StationInfo("test","test","test")
-
-        PrintWriter(FileWriter(path)).use {
-            val gson = Gson()
-            val jsonString = gson.toJson(test_station)
-            it.write(jsonString)
-            test_view.text = jsonString
-        }
-
+    fun loadJson() {
+        jsonString = openFileInput("data.json").reader().readText().toString()
+    }
+    fun writeJson(){
+        openFileOutput("data.json", Context.MODE_PRIVATE).write(jsonArray.toString().toByteArray())
     }
 
 
@@ -97,10 +91,11 @@ class MainActivity : ComponentActivity() {
         setContentView(R.layout.search)
 //        val test_view = findViewById<TextView>(R.id.station_info1)
 //        test_view.text = jsonString.toString()
-//        this.writeJson(test_view)
+//        this.writeJson()
         this.updateMyStations()
         val search_bar = findViewById<EditText>(R.id.search_input)
-        val search_button: Button = findViewById<Button>(R.id.search_button)
+        val search_button: ImageButton = findViewById<ImageButton>(R.id.search_button)
+
         search_bar.setHint("Search")
         search_button.setOnClickListener {
             this.onSearchButtonClick()

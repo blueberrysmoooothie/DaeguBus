@@ -49,7 +49,9 @@
                         android:layout_width="32dp"
                         android:layout_height="32dp"
                         android:layout_weight="1"
-                        android:src="@android:drawable/star_off" />
+                        android:background="#00FFFFFF"
+                        android:src="@android:drawable/star_off"
+                        tools:src="@drawable/star_blank" />
                 </LinearLayout>
 
                 <View

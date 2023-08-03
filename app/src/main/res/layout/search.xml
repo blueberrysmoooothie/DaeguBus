@@ -71,18 +71,28 @@
                     android:layout_height="1dp"
                     android:background="?android:attr/listDivider" />
 
-                <EditText
-                    android:id="@+id/search_input"
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:ems="10"
-                    android:inputType="text" />
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal">
 
-                <Button
-                    android:id="@+id/search_button"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="검색하기" />
+                    <EditText
+                        android:id="@+id/search_input"
+                        android:layout_width="124dp"
+                        android:layout_height="wrap_content"
+                        android:ems="10"
+                        android:inputType="text"
+                        android:textSize="15sp" />
+
+                    <ImageButton
+                        android:id="@+id/search_button"
+                        android:layout_width="36dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:src="@android:drawable/btn_star"
+                        tools:src="@drawable/search" />
+
+                </LinearLayout>
 
                 <LinearLayout
                     android:id="@+id/resultView"
