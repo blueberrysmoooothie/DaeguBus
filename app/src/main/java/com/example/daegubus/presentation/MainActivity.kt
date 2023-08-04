@@ -50,7 +50,7 @@ class MainActivity : ComponentActivity() {
 //    val pref : SharedPreferences = getSharedPreferences("MyPref", MODE_PRIVATE)
 //    val editor : SharedPreferences.Editor = pref.edit()
 
-    var myObj : JSONObject = JSONObject()
+//    var myObj : JSONObject = JSONObject()
     var jsonArray : JSONArray = JSONArray()
 
 
@@ -143,7 +143,6 @@ class MainActivity : ComponentActivity() {
         jsonObj.put("routeList", routeList)
 
         jsonArray.put(jsonObj)
-        this.saveData()
     }
 //
     fun updateMyStationJson(array : JSONArray){
@@ -170,7 +169,6 @@ class MainActivity : ComponentActivity() {
             for (index in 0 until jsonArray.length()){
                 if (jsonArray.getJSONObject(index).getString("bsId") != bsId){
                     newJsonArray.put(jsonArray.getJSONObject(index))
-
                 }
             }
             this.updateMyStationJson(newJsonArray)
@@ -180,6 +178,7 @@ class MainActivity : ComponentActivity() {
             this.addMyStation(bsId, bsNm, routeList)
             this.myStation = true
         }
+        this.saveData()
     }
 
     fun fill_star(starButton: ImageButton){
@@ -200,10 +199,11 @@ class MainActivity : ComponentActivity() {
         val station_text = findViewById<TextView>(R.id.station_text)
         val back_button = findViewById<Button>(R.id.back)
         val updateButton = findViewById<Button>(R.id.updateButton)
-        val starButton = findViewById<ImageButton>(R.id.starButton)
+        val starButton = findViewById<ImageButton>(R.id.starButton) // 즐겨찾기 버튼
 
-        this.checkMyStation(bsId)
-        this.fill_star(starButton)
+        this.checkMyStation(bsId) // 즐겨찾기 현황 확인
+        this.fill_star(starButton) // 즐겨찾기 현황 출력
+        // 즐겨찾기 버튼 함수 연결
         starButton.setOnClickListener{
             this.onMyStationClick(bsId, bsNm, routeList)
             this.onStaionViewClick(bsId, bsNm, routeList)
