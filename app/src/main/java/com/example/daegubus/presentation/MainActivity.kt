@@ -6,9 +6,6 @@
 
 package com.example.daegubus.presentation
 
-import android.annotation.SuppressLint
-import android.content.Context
-import android.content.res.Resources
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
@@ -40,20 +37,18 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.io.FileWriter
-import java.io.PrintWriter
-import com.google.gson.Gson
-import com.google.gson.JsonParser
-import org.json.JSONException
-import java.io.BufferedReader
-import java.io.File
-import java.io.FileReader
-import java.nio.charset.Charset
+
 
 class MainActivity : ComponentActivity() {
+    companion object{
+        lateinit var preferences: PreferenceUtil
+    }
+
 //    즐겨찾기 정보 json 파일
     var jsonString = ""
-//    var jsonArray = JSONArray(jsonString)
+    //    var jsonArray = JSONArray(jsonString)
+//    val pref : SharedPreferences = getSharedPreferences("MyPref", MODE_PRIVATE)
+//    val editor : SharedPreferences.Editor = pref.edit()
 
     var myObj : JSONObject = JSONObject()
     var jsonArray : JSONArray = JSONArray()
@@ -67,22 +62,37 @@ class MainActivity : ComponentActivity() {
     var stid:String = "000000"
     var myStation = false
 
-    fun loadJson() {
-        jsonString = openFileInput("data.json").reader().readText().toString()
+    fun loadData() {
+//        jsonString = openFileInput("data.json").reader().readText().toString()
+//        jsonString = pref.getString("stationInfo", "").toString()
+//        jsonArray = JSONArray(jsonString)
+        jsonString = preferences.getString("myStations", "")
+        if (jsonString == ""){
+            jsonArray = JSONArray()
+        }
+        else {
+            jsonArray = JSONArray(jsonString)
+        }
+
     }
-    fun writeJson(){
-        openFileOutput("data.json", Context.MODE_PRIVATE).write(jsonArray.toString().toByteArray())
+
+    fun saveData(){
+
+//        openFileOutput("data.json", Context.MODE_PRIVATE).write(jsonArray.toString().toByteArray())
+//        editor.putString("stationInfo", jsonArray.toString())
+        preferences.setString("myStations", jsonArray.toString())
     }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        preferences = PreferenceUtil(applicationContext)
         super.onCreate(savedInstanceState)
 
-        myObj.put("bsId", "7011012300")
-        myObj.put("bsNm", "강산아파트건너")
-        myObj.put("routeList", "")
-
-        jsonArray.put(myObj)
+//        myObj.put("bsId", "7011012300")
+//        myObj.put("bsNm", "강산아파트건너")
+//        myObj.put("routeList", "")
+//
+//        jsonArray.put(myObj)
 
         this.createSearchView()
     }
@@ -91,8 +101,8 @@ class MainActivity : ComponentActivity() {
         setContentView(R.layout.search)
 //        val test_view = findViewById<TextView>(R.id.station_info1)
 //        test_view.text = jsonString.toString()
-//        this.writeJson()
         this.updateMyStations()
+
         val search_bar = findViewById<EditText>(R.id.search_input)
         val search_button: ImageButton = findViewById<ImageButton>(R.id.search_button)
 
@@ -102,6 +112,8 @@ class MainActivity : ComponentActivity() {
         }
     }
     fun updateMyStations(){
+        this.loadData()
+
         val my_stations_view = findViewById<LinearLayout>(R.id.my_stations_layout)
         var my_result :List<StationInfo> = List(jsonArray.length(), { i -> StationInfo("0","0","0")})
         for (index in 0 until jsonArray.length()){
@@ -131,6 +143,7 @@ class MainActivity : ComponentActivity() {
         jsonObj.put("routeList", routeList)
 
         jsonArray.put(jsonObj)
+        this.saveData()
     }
 //
     fun updateMyStationJson(array : JSONArray){
@@ -331,7 +344,7 @@ fun Greeting(greetingName: String) {
 @Preview(device = Devices.WEAR_OS_SMALL_ROUND, showSystemUi = true)
 @Composable
 fun DefaultPreview() {
-    WearApp("Preview Android")
-    val jsonString = ComponentActivity().assets.open("data.json").reader().readText()
+//    WearApp("Preview Android")
+//    val jsonString = ComponentActivity().assets.open("data.json").reader().readText()
 //    val jsonArray = JSONTokener(jsonString).nextValue() as JSONArray
 }
